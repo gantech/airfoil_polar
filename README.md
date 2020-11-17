@@ -1,4 +1,8 @@
-#Set of utilities to create airfoil polars using HAM2D and automated mesh generation 
+Set of utilities to create airfoil polars using HAM2D and automated mesh generation 
+
+Source this file before doing anything 
+
+```source /projects/integrate/integrate_cfd/integrate_env.sh```
 
 The steps are
 
