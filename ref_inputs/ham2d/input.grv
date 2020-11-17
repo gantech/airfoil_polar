@@ -1,0 +1,14 @@
+motion=0
+grdu=0.0
+grdv=0.0
+omz=0.04
+xcen=0.25
+ycen=0.0
+mtip=0.755
+pitchamp=2.51
+pitchrf=0.0814
+
+motion:
+1. translation
+2. rotation
+3. pitching

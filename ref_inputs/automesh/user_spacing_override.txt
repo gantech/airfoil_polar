@@ -1,0 +1,15 @@
+mode 1
+Re 10.0e6
+charlen 1
+yPlus 2.0
+OBdelta 3.0
+
+#############
+
+mode: 1 = use turbulent flow theory to set cutoff, otherwise ignore
+Re: Reynolds number
+charlen: characteristic length in Reynolds number.
+	-1 = get from main element chord
+	>0, # = manually set value
+yPlus: Standard y+ value
+OBdelta: #*delta = outer boundary cutoff distance

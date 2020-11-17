@@ -1,0 +1,10 @@
+smDistMax 0.5
+paramSmIt 40
+Laplacian 0
+L_skipring 30
+L_passes 2
+L_strength 0.9
+Strandwise 1
+S_skipring 3
+S_passes 4
+S_strength 0.75
