@@ -1,10 +1,31 @@
-import os, glob, re, yaml
+import os, glob, re, yaml, glob
 import numpy as np
 import pandas as pd
 import pathlib
 import shutil, os
+import cst
 
 #Ham2D inputs
+
+def get_ref_af_y ( af_file ):
+    """Get the y coordinates for the reference airfoil for 
+       a cosine distribution in x"""
+    af = cst.AirfoilShape.from_txt_file(af_file)
+    mod_af = cst.AirfoilShape.from_cst_parameters(af.cst().cst_lower, af.te_lower, af.cst().cst_upper, af.te_upper)
+    return mod_af.yco
+
+def get_nearest_ref_af(x,y):
+    """Get nearest reference airfoil for a given set of airfoil coordinates"""
+    af = cst.AirfoilShape(x,y)
+    mod_af = cst.AirfoilShape.from_cst_parameters(af.cst().cst_lower,
+                                                  af.te_lower,
+                                                  af.cst().cst_upper,
+                                                  af.te_upper)
+    ref_afs = glob.glob('ref_inputs/automesh/usr_inputs/afs/*')
+    ref_afs_diff = [ np.linalg.norm(get_ref_af_y(af)-mod_af.yco) for af in ref_afs ]
+    nearest_af = ref_afs[np.argmin(ref_afs_diff)]
+    return nearest_af.split('/')[-1]
+
 def get_ref_automesh_inputs(af_name):
     usr_inputs = pd.read_csv('ref_inputs/automesh/usr_inputs/usr_inputs_{}.txt'.format(af_name.lower()),header=None,index_col=0,sep='\s+')
     return usr_inputs
@@ -12,7 +33,8 @@ def get_ref_automesh_inputs(af_name):
 def write_ham2d_mesh_input(x,y,dirname,afname,reynolds_no):
     pathlib.Path(dirname).mkdir(exist_ok=True)
 
-    usr_inputs = get_ref_automesh_inputs(afname)
+    nearest_af = get_nearest_ref_af(x, y)
+    usr_inputs = get_ref_automesh_inputs(nearest_af)
     usr_inputs.loc['inputfile'] = '{}.dat'.format(afname)
     usr_inputs.to_csv(dirname+'/usr_inputs.txt',sep=' ',header=None)
 
@@ -47,13 +69,13 @@ def create_ham2d_input_files(dir_name, af_files, re=[3e6,6e6,9e6,12e6], aoa=np.l
 
     for i,af in enumerate(af_files):
         af_name = af.split('/')[-1]
-        af_shape = pd.read_csv(af,header=None,sep='\s+')
+        af_shape = np.loadtxt(af)
         pathlib.Path(dir_name+'/ham2d/{}'.format(af_name)).mkdir(exist_ok=True)
         for c_re in re:
             re_dir = dir_name+'/ham2d/{}/re_{:08d}'.format(af_name,int(c_re))
             pathlib.Path(re_dir).mkdir(exist_ok=True)
             pathlib.Path(re_dir+'/mesh/').mkdir(exist_ok=True)
-            write_ham2d_mesh_input(af_shape.iloc[:,0],af_shape.iloc[:,1],re_dir+'/mesh',af_name, c_re)
+            write_ham2d_mesh_input(af_shape[:,0],af_shape[:,1],re_dir+'/mesh',af_name, c_re)
             pathlib.Path(re_dir+'/mesh/meshgen_test/autorun/QuadData').mkdir(parents=True,exist_ok=True)
             for alpha in aoa:
                 if (alpha < 0):
