@@ -45,10 +45,18 @@ def write_ham2d_mesh_input(x,y,dirname,afname,reynolds_no):
         f.write('yPlus 2.0 \n')
         f.write('OBdelta 3.0 \n')
 
+    af = cst.AirfoilShape(x,y)
+    mod_af = cst.AirfoilShape.from_cst_parameters(af.cst().cst_lower,
+                                                  af.te_lower,
+                                                  af.cst().cst_upper,
+                                                  af.te_upper)
+    
+    interp_x = mod_af.xco
+    interp_y = mod_af.yco
     with pathlib.Path(dirname+'/{}.dat'.format(afname)).open('w') as f:
-        npts = np.size(x)
+        npts = np.size(interp_x)
         for i in range(npts):
-            f.write('{}    {}\n'.format(x[i],y[i]))
+            f.write('{}    {}\n'.format(interp_x[i], interp_y[i]))
 
     shutil.copy(pathlib.Path('ref_inputs/automesh/user_smoothing.txt'),pathlib.Path(dirname+'/user_smoothing.txt'))
     shutil.copy(pathlib.Path('ref_inputs/automesh/user_stretch.txt'),pathlib.Path(dirname+'/user_stretch.txt'))
